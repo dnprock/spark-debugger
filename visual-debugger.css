@@ -11,13 +11,12 @@ path.link {
 }
 
 circle {
-  fill: steelblue;
   stroke: #fff;
   stroke-width: 1.5px;
 }
 
 text {
   fill: #000;
-  font: 10px sans-serif;
+  font: 12px sans-serif;
   pointer-events: none;
 }

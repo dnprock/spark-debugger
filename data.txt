@@ -1,20 +1,44 @@
-org.apache.spark.rdd.RDD.count(RDD.scala:904)
-$line9.$read$$iwC$$iwC$$iwC$$iwC.&lt;init&gt;(&lt;console&gt;:15)
-$line9.$read$$iwC$$iwC$$iwC.&lt;init&gt;(&lt;console&gt;:20)
-$line9.$read$$iwC$$iwC.&lt;init&gt;(&lt;console&gt;:22)
-$line9.$read$$iwC.&lt;init&gt;(&lt;console&gt;:24)
-$line9.$read.&lt;init&gt;(&lt;console&gt;:26)
-$line9.$read$.&lt;init&gt;(&lt;console&gt;:30)
-$line9.$read$.&lt;clinit&gt;(&lt;console&gt;)
-$line9.$eval$.&lt;init&gt;(&lt;console&gt;:7)
-$line9.$eval$.&lt;clinit&gt;(&lt;console&gt;)
-$line9.$eval.$print(&lt;console&gt;)
-sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
-sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
-sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
-java.lang.reflect.Method.invoke(Method.java:483)
-org.apache.spark.repl.SparkIMain$ReadEvalPrint.call(SparkIMain.scala:789)
-org.apache.spark.repl.SparkIMain$Request.loadAndRun(SparkIMain.scala:1062)
-org.apache.spark.repl.SparkIMain.loadAndRunReq$1(SparkIMain.scala:615)
-org.apache.spark.repl.SparkIMain.interpret(SparkIMain.scala:646)
-org.apache.spark.repl.SparkIMain.interpret(SparkIMain.scala:610)
+org.apache.spark.rdd.RDD.collect(RDD.scala:774),0
+org.apache.spark.mllib.classification.NaiveBayes.run(NaiveBayes.scala:102),0
+org.apache.spark.mllib.classification.NaiveBayes$.train(NaiveBayes.scala:164),0
+KaggleHiggBosonLabel$.main(KaggleHiggBosonLabel.scala:42),0
+KaggleHiggBosonLabel.main(KaggleHiggBosonLabel.scala),0
+sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method),0
+sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62),0
+sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43),0
+java.lang.reflect.Method.invoke(Method.java:483),0
+org.apache.spark.deploy.SparkSubmit$.launch(SparkSubmit.scala:314),0
+org.apache.spark.deploy.SparkSubmit$.main(SparkSubmit.scala:73),0
+org.apache.spark.deploy.SparkSubmit.main(SparkSubmit.scala),0
+org.apache.spark.rdd.RDD.map(RDD.scala:270),1
+org.apache.spark.mllib.classification.NaiveBayes.run(NaiveBayes.scala:97),1
+org.apache.spark.mllib.classification.NaiveBayes$.train(NaiveBayes.scala:164),1
+KaggleHiggBosonLabel$.main(KaggleHiggBosonLabel.scala:42),1
+KaggleHiggBosonLabel.main(KaggleHiggBosonLabel.scala),1
+sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method),1
+sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62),1
+sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43),1
+java.lang.reflect.Method.invoke(Method.java:483),1
+org.apache.spark.deploy.SparkSubmit$.launch(SparkSubmit.scala:314),1
+org.apache.spark.deploy.SparkSubmit$.main(SparkSubmit.scala:73),1
+org.apache.spark.deploy.SparkSubmit.main(SparkSubmit.scala),1
+org.apache.spark.rdd.RDD.count(RDD.scala:904),2
+KaggleHiggBosonLabel$.main(KaggleHiggBosonLabel.scala:47),2
+KaggleHiggBosonLabel.main(KaggleHiggBosonLabel.scala),2
+sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method),2
+sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62),2
+sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43),2
+java.lang.reflect.Method.invoke(Method.java:483),2
+org.apache.spark.deploy.SparkSubmit$.launch(SparkSubmit.scala:314),2
+org.apache.spark.deploy.SparkSubmit$.main(SparkSubmit.scala:73),2
+org.apache.spark.deploy.SparkSubmit.main(SparkSubmit.scala),2
+org.apache.spark.rdd.RDD.count(RDD.scala:904),3
+KaggleHiggBosonLabel$.main(KaggleHiggBosonLabel.scala:47),3
+KaggleHiggBosonLabel.main(KaggleHiggBosonLabel.scala),3
+sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method),3
+sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62),3
+sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43),3
+java.lang.reflect.Method.invoke(Method.java:483),3
+org.apache.spark.deploy.SparkSubmit$.launch(SparkSubmit.scala:314),3
+org.apache.spark.deploy.SparkSubmit$.main(SparkSubmit.scala:73),3
+org.apache.spark.deploy.SparkSubmit.main(SparkSubmit.scala),3
