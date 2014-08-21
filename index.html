@@ -13,15 +13,76 @@
 <script src="visual-debugger.js"></script>
 
 <script type="text/javascript">
+  $(document).ready(function() {
   
-  $.get("data.txt", function(data) {
-    drawD3Document(data);
+    var stages = {};
+  
+    $('.stage-detail-text').each(function(i) {
+      stages[$(this).data("stage-id")] = $(this).html();
+    });
+
+    drawD3Document(stages);
   });
 </script>
 
 </head>
 
 <body>
+  <span class="stage-detail-text" data-stage-id="0" style="display:none">
+    org.apache.spark.rdd.RDD.collect(RDD.scala:774)
+    org.apache.spark.mllib.classification.NaiveBayes.run(NaiveBayes.scala:102)
+    org.apache.spark.mllib.classification.NaiveBayes$.train(NaiveBayes.scala:164)
+    KaggleHiggBosonLabel$.main(KaggleHiggBosonLabel.scala:42)
+    KaggleHiggBosonLabel.main(KaggleHiggBosonLabel.scala)
+    sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+    sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+    sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+    java.lang.reflect.Method.invoke(Method.java:483)
+    org.apache.spark.deploy.SparkSubmit$.launch(SparkSubmit.scala:314)
+    org.apache.spark.deploy.SparkSubmit$.main(SparkSubmit.scala:73)
+    org.apache.spark.deploy.SparkSubmit.main(SparkSubmit.scala)
+  </span>
+  
+  <span class="stage-detail-text" data-stage-id="1" style="display:none">
+    org.apache.spark.rdd.RDD.map(RDD.scala:270)
+    org.apache.spark.mllib.classification.NaiveBayes.run(NaiveBayes.scala:97)
+    org.apache.spark.mllib.classification.NaiveBayes$.train(NaiveBayes.scala:164)
+    KaggleHiggBosonLabel$.main(KaggleHiggBosonLabel.scala:42)
+    KaggleHiggBosonLabel.main(KaggleHiggBosonLabel.scala)
+    sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+    sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+    sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+    java.lang.reflect.Method.invoke(Method.java:483)
+    org.apache.spark.deploy.SparkSubmit$.launch(SparkSubmit.scala:314)
+    org.apache.spark.deploy.SparkSubmit$.main(SparkSubmit.scala:73)
+    org.apache.spark.deploy.SparkSubmit.main(SparkSubmit.scala)
+  </span>
+  
+  <span class="stage-detail-text" data-stage-id="2" style="display:none">
+    org.apache.spark.rdd.RDD.count(RDD.scala:904)
+    KaggleHiggBosonLabel$.main(KaggleHiggBosonLabel.scala:47)
+    KaggleHiggBosonLabel.main(KaggleHiggBosonLabel.scala)
+    sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+    sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+    sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+    java.lang.reflect.Method.invoke(Method.java:483)
+    org.apache.spark.deploy.SparkSubmit$.launch(SparkSubmit.scala:314)
+    org.apache.spark.deploy.SparkSubmit$.main(SparkSubmit.scala:73)
+    org.apache.spark.deploy.SparkSubmit.main(SparkSubmit.scala)
+  </span>
+  
+  <span class="stage-detail-text" data-stage-id="3" style="display:none">
+    org.apache.spark.rdd.RDD.count(RDD.scala:904)
+    KaggleHiggBosonLabel$.main(KaggleHiggBosonLabel.scala:47)
+    KaggleHiggBosonLabel.main(KaggleHiggBosonLabel.scala)
+    sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+    sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+    sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+    java.lang.reflect.Method.invoke(Method.java:483)
+    org.apache.spark.deploy.SparkSubmit$.launch(SparkSubmit.scala:314)
+    org.apache.spark.deploy.SparkSubmit$.main(SparkSubmit.scala:73)
+    org.apache.spark.deploy.SparkSubmit.main(SparkSubmit.scala)
+  </span>
   
   <div id="canvas-svg">
   </div>

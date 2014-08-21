@@ -4,47 +4,44 @@ function htmlDecode(input){
   return e.childNodes.length === 0 ? "" : e.childNodes[0].nodeValue;
 }
 
-function drawD3Document(data) {
+function drawD3Document(stagesData) {
   var WIDTH = 1000, HEIGHT = 800;
-  var graph_data = [];
+  var graphData = [];
 
   var nodes = [];
-  var nodes_map = {};
+  var nodesMap = {};
   
-  var data_stack = data.split("\n");
-  var prev_node = null;
-  var c_stage = -1;
-  var stages = [];
-  for (var i = 0; i < data_stack.length; i++) {
-    if (data_stack[i] !== "") {
-      var call_data = htmlDecode(data_stack[i]).split(",");
+  for (var i = 0; i < Object.keys(stagesData).length; i++) {
+    var cStage = Object.keys(stagesData)[i];
+    var stackData = stagesData[cStage];
+    
+    var callData = htmlDecode(stackData).split("\n");
+    var prevNode = null;
+    
+    for (var j = 0; j < callData.length; j++) {
+      var call = callData[j].trim();
       
-      if (stages.indexOf(call_data[1]) === -1) {
-        stages.push(call_data[1]);
-      }
-      
-      if (!nodes_map[call_data[0]]) {
-        // new node
-        var n = {name: call_data[0], stages: [call_data[1]]};
-        nodes.push(n);
-        nodes_map[n.name] = n;
-      } else {
-        nodes_map[call_data[0]].stages.push(call_data[1]);
-      }
-      
-      if (call_data[1] !== c_stage) {
-        // stage change, no link
-        c_stage = call_data[1];
-      } else {
-        var link = {};
-        
-        link.source = nodes_map[call_data[0]];
-        link.target = prev_node;
+      if (call !== "") {
+        if (!nodesMap[callData[j]]) {
+          // new node
+          var n = {name: callData[j], stages: [cStage]};
+          nodes.push(n);
+          nodesMap[n.name] = n;
+        } else {
+          nodesMap[callData[j]].stages.push(cStage);
+        }
 
-        graph_data.push(link);
-      }
+        if (prevNode !== null) {
+          var link = {};
       
-      prev_node = nodes_map[call_data[0]];
+          link.source = nodesMap[callData[j]];
+          link.target = prevNode;
+
+          graphData.push(link);
+        }
+
+        prevNode = nodesMap[callData[j]];
+      }
     }
   }
 
@@ -53,7 +50,7 @@ function drawD3Document(data) {
 
   var force = d3.layout.force()
       .nodes(d3.values(nodes))
-      .links(graph_data)
+      .links(graphData)
       .size([width - 200, height])
       .linkDistance(100)
       .gravity(0.1)
@@ -162,7 +159,7 @@ function drawD3Document(data) {
   
   // append legend
   var legend = svg.selectAll(".legend")
-      .data(stages).enter()
+      .data(Object.keys(stagesData)).enter()
       .append("g").attr("class", "legend")
       .attr("transform", function(d, i) {
           return "translate(50," + (70 + i * 25) + ")";
