@@ -23,7 +23,7 @@ visualDebugger = {
     return e.childNodes.length === 0 ? "" : e.childNodes[0].nodeValue;
   },
   drawD3Document: function(stagesData) {
-    var WIDTH = 1000, HEIGHT = 800;
+    var WIDTH = 800, HEIGHT = 1000;
     var graphData = [];
 
     var nodes = [];
@@ -38,27 +38,42 @@ visualDebugger = {
     
       for (var j = 0; j < callData.length; j++) {
         var call = callData[j].trim();
-      
+        
         if (call !== "") {
-          if (!nodesMap[callData[j]]) {
+          if (!nodesMap[call]) {
             // new node
-            var n = {name: callData[j], stages: [cStage]};
+            var n = {name: call, stages: [cStage], children: null};
             nodes.push(n);
             nodesMap[n.name] = n;
           } else {
-            nodesMap[callData[j]].stages.push(cStage);
+            nodesMap[call].stages.push(cStage);
           }
 
           if (prevNode !== null) {
             var link = {};
       
-            link.source = nodesMap[callData[j]];
+            link.source = nodesMap[call];
             link.target = prevNode;
+            
+            link.target.parent = link.source.name;
+            if (link.source.children) {
+              var found = false;
+              link.source.children.forEach(function(c) {
+                if (c.name === link.target.name) {
+                  found = true;
+                }
+              });
+              if (!found) {
+                link.source.children.push(link.target);
+              }
+            } else {
+              link.source.children = [link.target];
+            }
 
             graphData.push(link);
           }
 
-          prevNode = nodesMap[callData[j]];
+          prevNode = nodesMap[call];
         }
       }
     }
@@ -66,44 +81,44 @@ visualDebugger = {
     var width = WIDTH,
         height = HEIGHT;
 
-    var force = d3.layout.force()
-        .nodes(d3.values(nodes))
-        .links(graphData)
-        .size([width - 200, height])
-        .linkDistance(100)
-        .gravity(0.1)
-        .charge(-1000)
-        .on("tick", tick)
-        .start();
+    var root;
+    for (var i = 0; i < nodes.length; i++) {
+      if (!nodes[i].parent) {
+        root = nodes[i];
+      }
+    }
+    
+    var tree = d3.layout.tree()
+                .size([width, height]);
+
+    tree.separation(function(a, b) {
+      return a.parent === b.parent ? 1 : 1;
+    });
+
+    var tree_nodes = tree.nodes(root);
+    var links = tree.links(nodes);
 
     var svg = d3.select("#canvas-svg").append("svg")
         .attr("width", width)
         .attr("height", height);
+    
+    var tree_group = svg.append("g")
+        .attr("id", "tree-group")
 
-    // build the arrow.
-    svg.append("svg:defs").selectAll("marker")
-        .data(["end"])      // Different link/path types can be defined here
-      .enter().append("svg:marker")    // This section adds in the arrows
-        .attr("id", String)
-        .attr("viewBox", "0 -5 10 10")
-        .attr("refX", 22)
-        .attr("refY", -2.5)
-        .attr("markerWidth", 10)
-        .attr("markerHeight", 10)
-        .attr("orient", "auto")
-      .append("svg:path")
-        .attr("d", "M0,-5L10,0L0,5");
-
-    // add the links and the arrows
-    var path = svg.append("svg:g").selectAll("path")
-        .data(force.links())
-      .enter().append("svg:path")
-        .attr("class", "link")
-        .attr("marker-end", "url(#end)");
-
+    tree_nodes.forEach(function(d) {
+      d.y = d.depth * 100;
+    });
+    
     // define the nodes
-    var node = svg.selectAll(".node")
-        .data(force.nodes())
+    var i = 0;
+    var x_ratio = 1;
+    var y_ratio = 1;
+    var y_padding = 50;
+    var x_padding = 0;
+    var minX = 999999, minY = 999999,
+        maxX = 0, maxY = 0;
+    var node = tree_group.selectAll(".node")
+        .data(tree_nodes, function(d) { return d.id || (d.id = ++i); })
       .enter().append("g")
         .attr("class", function(d) {
           var cl = "circle";
@@ -112,10 +127,48 @@ visualDebugger = {
           }
           return cl;
         })
-        .call(force.drag);
+        .attr("transform", function(d) {
+          var x = d.x * x_ratio + x_padding,
+              y = d.y * y_ratio + y_padding;
+          
+          if (x < minX) minX = x;
+          if (y < minY) minY = y;
+          if (x > maxX) maxX = x;
+          if (y > maxY) maxY = y;
+          
+          return "translate(" + (x) + "," + (y) + ")";
+        });
 
-    var color = d3.scale.category20();
-    var radius = 20;
+  var scaleX = 1, scaleY = 1;
+  if (maxY - minY > height) scaleY = height / (maxY - minY);
+  if (maxX - minX > width) scaleX = width / (maxX - minX);
+  
+  var scale = (scaleX < scaleY) ? scaleX : scaleY;
+  tree_group.attr("transform", "scale(" + scale + ", " + scale * 0.9 + ")");
+
+  var color = d3.scale.category20();
+  var radius = 20;
+  
+  tree_group.append("marker")
+    .attr("xmlns", "http://www.w3.org/2000/svg")
+    .attr("id", "triangle")
+    .attr("viewBox", "0 0 10 10")
+    .attr("refX", "8")
+    .attr("refY", "5")
+    .attr("markerUnits", "strokeWidth")
+    .attr("markerWidth", "8")
+    .attr("markerHeight", "6")
+    .attr("orient", "auto")
+    .html('<path d="M 0 0 L 10 5 L 0 10 z"/>');
+  
+  var link = tree_group.selectAll("line")
+        .data(links)
+      .enter().insert("svg:line")
+                .attr("marker-end", "url(#triangle)")
+                .attr("x1", function(d) { return d.source.x * x_ratio + x_padding; })
+                .attr("y1", function(d) { return d.source.y * y_ratio + radius + y_padding; })
+                .attr("x2", function(d) { return d.target.x * x_ratio + x_padding; })
+                .attr("y2", function(d) { return d.target.y * y_ratio - radius + y_padding; });
   
     // add circle nodes
     d3.selectAll("g.circle").append("circle")
@@ -155,41 +208,22 @@ visualDebugger = {
         .text(function(d) {
           return d.name.substring(d.name.indexOf("(") + 1, d.name.indexOf(")"));
         });
-
-    // add the curvy lines
-    function tick() {
-        path.attr("d", function(d) {
-            var dx = d.target.x - d.source.x,
-                dy = d.target.y - d.source.y,
-                dr = Math.sqrt(dx * dx + dy * dy);
-            return "M" + 
-                d.source.x + "," + 
-                d.source.y + "A" + 
-                dr + "," + dr + " 0 0,1 " + 
-                d.target.x + "," + 
-                d.target.y;
-        });
-
-        node
-            .attr("transform", function(d) { 
-      	    return "translate(" + d.x + "," + d.y + ")"; });
-    }
-  
+    
     // append legend
     var legend = svg.selectAll(".legend")
         .data(Object.keys(stagesData)).enter()
         .append("g").attr("class", "legend")
         .attr("transform", function(d, i) {
-            return "translate(50," + (70 + i * 25) + ")";
+            return "translate(50," + (20 + i * 25) + ")";
         });
 
     legend.append("rect")
-        .attr("x", width - 200)
+        .attr("x", width - 80)
         .attr("width", 18).attr("height", 18)
         .style("fill", function(d) {
             return color(d);
         });
-    legend.append("text").attr("x", width - 210)
+    legend.append("text").attr("x", width - 90)
         .attr("y", 9).attr("dy", ".35em")
         .style("text-anchor", "end").text(function(d) {
             return "Stage " + d;
