@@ -4,18 +4,21 @@
 #canvas-svg {
 }
 
-circle {
-  stroke: #fff;
-  stroke-width: 1.5px;
+text {
+  font-weight: 300;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serf;
+  font-size: 14px;
 }
 
-text {
-  fill: #000;
-  font: 12px sans-serif;
-  pointer-events: none;
+.node rect {
+  stroke: #333;
+}
+
+.edgePath path {
+  stroke: #333;
+  fill: none;
 }
 
 line {
-  stroke: #666;
   stroke-width: 1.5px;
 }

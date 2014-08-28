@@ -54,6 +54,7 @@ visualDebugger = {
       
             link.source = nodesMap[call];
             link.target = prevNode;
+            link.stage = cStage;
             
             link.target.parent = link.source.name;
             if (link.source.children) {
@@ -77,139 +78,94 @@ visualDebugger = {
         }
       }
     }
+    
+    function shortenFunctionName(name) {
+      return name.substring(name.indexOf("(") + 1, name.indexOf(")"))
+    }
 
     var width = WIDTH,
         height = HEIGHT;
 
-    var root;
+    var g = new dagreD3.Digraph();
+    var color = d3.scale.category20();
+
+    // States and transitions from RFC 793
+    var states = [];
     for (var i = 0; i < nodes.length; i++) {
-      if (!nodes[i].parent) {
-        root = nodes[i];
-      }
+      var n = shortenFunctionName(nodes[i].name);
+      states.push(n);
     }
-    
-    var tree = d3.layout.tree()
-                .size([width, height]);
 
-    tree.separation(function(a, b) {
-      return a.parent === b.parent ? 1 : 1;
+    // Automatically label each of the nodes
+    states.forEach(function(state) { g.addNode(state, { label: state }); });
+    
+    for (var i = 0; i < graphData.length; i++) {
+      g.addEdge(null, shortenFunctionName(graphData[i].source.name),
+                      shortenFunctionName(graphData[i].target.name),
+                      { label: "", style: 'stroke-width: 1.5px; stroke: ' + color(graphData[i].stage) + ';' });
+    }
+
+    // Create the renderer
+    var renderer = new dagreD3.Renderer();
+
+    // Set up an SVG group so that we can translate the final graph.
+    var svg = d3.select('#canvas-svg').append('svg'),
+        svgGroup = svg.append('g');
+
+    // Set initial zoom to 75%
+    var initialScale = 1;
+    var oldZoom = renderer.zoom();
+    renderer.zoom(function(graph, svg) {
+      var zoom = oldZoom(graph, svg);
+
+      // We must set the zoom and then trigger the zoom event to synchronize
+      // D3 and the DOM.
+      zoom.scale(initialScale).event(svg);
+      return zoom;
     });
 
-    var tree_nodes = tree.nodes(root);
-    var links = tree.links(nodes);
+    // Run the renderer. This is what draws the final graph.
+    var layout = renderer.run(g, svgGroup);
 
-    var svg = d3.select("#canvas-svg").append("svg")
-        .attr("width", width)
-        .attr("height", height);
+    // Center the graph
+    var svgWidth = layout.graph().width * initialScale + 40;
+    var svgHeight = layout.graph().height * initialScale + 40
+    svg.attr('width', svgWidth);
+    svg.attr('height', svgHeight);
     
-    var tree_group = svg.append("g")
-        .attr("id", "tree-group")
+    // Fit to window
+    var scaleX = window.innerWidth / svgWidth;
+  
+    if (scaleX < 1) {
+      svg.select("g").attr("transform", "scale(" + scaleX * 0.9 + ", " + scaleX + ")");
+      svgWidth = window.innerWidth * 0.9;
+      svgHeight = svgHeight * scaleX;
+      svg.attr('width', svgWidth);
+      svg.attr('height', svgHeight);
+    }
 
-    tree_nodes.forEach(function(d) {
-      d.y = d.depth * 100;
-    });
-    
-    // define the nodes
-    var i = 0;
-    var x_ratio = 1;
-    var y_ratio = 1;
-    var y_padding = 50;
-    var x_padding = 0;
-    var minX = 999999, minY = 999999,
-        maxX = 0, maxY = 0;
-    var node = tree_group.selectAll(".node")
-        .data(tree_nodes, function(d) { return d.id || (d.id = ++i); })
-      .enter().append("g")
-        .attr("class", function(d) {
-          var cl = "circle";
-          if (d.stages.length > 1) {
-            cl = "pie";
-          }
-          return cl;
+    // arror marker for legend
+    var arrowMarkers = svg.append("g").attr("id", "arrow-markers");
+    arrowMarkers.selectAll(".arrow-marker")
+      .data(Object.keys(stagesData)).enter()
+      .append("marker")
+        .attr("xmlns", "http://www.w3.org/2000/svg")
+        .attr("id", function(d) {
+          return "triangle-" + d;
         })
-        .attr("transform", function(d) {
-          var x = d.x * x_ratio + x_padding,
-              y = d.y * y_ratio + y_padding;
-          
-          if (x < minX) minX = x;
-          if (y < minY) minY = y;
-          if (x > maxX) maxX = x;
-          if (y > maxY) maxY = y;
-          
-          return "translate(" + (x) + "," + (y) + ")";
-        });
-
-  var scaleX = 1, scaleY = 1;
-  if (maxY - minY > height) scaleY = height / (maxY - minY);
-  if (maxX - minX > width) scaleX = width / (maxX - minX);
-  
-  var scale = (scaleX < scaleY) ? scaleX : scaleY;
-  tree_group.attr("transform", "scale(" + scale + ", " + scale * 0.9 + ")");
-
-  var color = d3.scale.category20();
-  var radius = 20;
-  
-  tree_group.append("marker")
-    .attr("xmlns", "http://www.w3.org/2000/svg")
-    .attr("id", "triangle")
-    .attr("viewBox", "0 0 10 10")
-    .attr("refX", "8")
-    .attr("refY", "5")
-    .attr("markerUnits", "strokeWidth")
-    .attr("markerWidth", "8")
-    .attr("markerHeight", "6")
-    .attr("orient", "auto")
-    .html('<path d="M 0 0 L 10 5 L 0 10 z"/>');
-  
-  var link = tree_group.selectAll("line")
-        .data(links)
-      .enter().insert("svg:line")
-                .attr("marker-end", "url(#triangle)")
-                .attr("x1", function(d) { return d.source.x * x_ratio + x_padding; })
-                .attr("y1", function(d) { return d.source.y * y_ratio + radius + y_padding; })
-                .attr("x2", function(d) { return d.target.x * x_ratio + x_padding; })
-                .attr("y2", function(d) { return d.target.y * y_ratio - radius + y_padding; });
-  
-    // add circle nodes
-    d3.selectAll("g.circle").append("circle")
-        .attr("r", radius)
+        .attr("class", ".arrow-marker")
+        .attr("viewBox", "0 0 10 10")
+        .attr("refX", "8")
+        .attr("refY", "5")
+        .attr("markerUnits", "strokeWidth")
+        .attr("markerWidth", "8")
+        .attr("markerHeight", "6")
+        .attr("orient", "auto")
         .style("fill", function(d) {
-          return color(d.stages[0]);
-        });
-  
-    var arc = d3.svg.arc()
-        .outerRadius(radius)
-        .innerRadius(0);
+          return color(d);
+        })
+        .html('<path d="M 0 0 L 10 5 L 0 10 z"/>');
 
-    var pie = d3.layout.pie()
-        .sort(null)
-        .value(function(d) { return 10; });
-
-    // add pie nodes
-    d3.selectAll("g.pie").call(function(d) {
-      for (var i = 0; i < d[0].length; i++) {
-        var pie_arcs = d3.select(d[0][i]).selectAll(".arc")
-            .data(pie(d.data()[i].stages))
-            .enter().append("g")
-            .attr("class", "arc");
-      
-        pie_arcs.append("path")
-            .attr("d", arc)
-            .style("fill", function(d) {
-              return color(d.data);
-            });
-      }
-    });
-
-    // add the text 
-    node.append("text")
-        .attr("x", 25)
-        .attr("dy", ".35em")
-        .text(function(d) {
-          return d.name.substring(d.name.indexOf("(") + 1, d.name.indexOf(")"));
-        });
-    
-    // append legend
     var legend = svg.selectAll(".legend")
         .data(Object.keys(stagesData)).enter()
         .append("g").attr("class", "legend")
@@ -217,13 +173,27 @@ visualDebugger = {
             return "translate(50," + (20 + i * 25) + ")";
         });
 
-    legend.append("rect")
-        .attr("x", width - 80)
-        .attr("width", 18).attr("height", 18)
-        .style("fill", function(d) {
+    legend.append("line")
+        .attr("marker-end", function(d) {
+          return "url(#triangle-" + d + ")";
+        })
+        .attr("x1", function(d, i) {
+          return svgWidth - 250;
+        })
+        .attr("x2", function(d, i) {
+          return svgWidth - 150;
+        })
+        .attr("y1", function(d, i) {
+          return (10)
+        })
+        .attr("y2", function(d, i) {
+          return (10)
+        })
+        .style("stroke", function(d) {
             return color(d);
         });
-    legend.append("text").attr("x", width - 90)
+    
+    legend.append("text").attr("x", svgWidth - 90)
         .attr("y", 9).attr("dy", ".35em")
         .style("text-anchor", "end").text(function(d) {
             return "Stage " + d;
